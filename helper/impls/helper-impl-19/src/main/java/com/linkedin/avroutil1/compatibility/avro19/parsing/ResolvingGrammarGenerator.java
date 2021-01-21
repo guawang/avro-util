@@ -48,12 +48,8 @@ import java.util.Map;
 public class ResolvingGrammarGenerator extends ValidatingGrammarGenerator {
 
   static {
-    Accessor.setAccessor(new ResolvingGrammarGeneratorAccessor() {
-      @Override
-      protected void encode(Encoder e, Schema s, JsonNode n) throws IOException {
-        ResolvingGrammarGenerator.encode(e, s, n);
-      }
-    });
+    //this is done to trigger the static block on the vanilla class
+    new org.apache.avro.io.parsing.ResolvingGrammarGenerator();
   }
 
   /**
@@ -245,7 +241,7 @@ public class ResolvingGrammarGenerator extends ValidatingGrammarGenerator {
    * @return The binary encoded version of {@code n}.
    * @throws IOException
    */
-  private static byte[] getBinary(Schema s, JsonNode n) throws IOException {
+  protected static byte[] getBinary(Schema s, JsonNode n) throws IOException {
     ByteArrayOutputStream out = new ByteArrayOutputStream();
     Encoder e = factory.binaryEncoder(out, null);
     encode(e, s, n);
@@ -355,6 +351,27 @@ public class ResolvingGrammarGenerator extends ValidatingGrammarGenerator {
         throw new AvroTypeException("Non-null default value for null type: " + n);
       e.writeNull();
       break;
+    }
+  }
+
+  /**
+   * Clever trick which differentiates items put into
+   * <code>seen</code> by {@link ValidatingGrammarGenerator validating()}
+   * from those put in by {@link ValidatingGrammarGenerator resolving()}.
+   */
+  static class LitS2 extends LitS {
+    public Schema expected;
+    public LitS2(Schema actual, Schema expected) {
+      super(actual);
+      this.expected = expected;
+    }
+    public boolean equals(Object o) {
+      if (! (o instanceof LitS2)) return false;
+      LitS2 other = (LitS2) o;
+      return actual == other.actual && expected == other.expected;
+    }
+    public int hashCode() {
+      return super.hashCode() + expected.hashCode();
     }
   }
 }

@@ -23,16 +23,16 @@
  */
 package com.linkedin.avroutil1.compatibility.avro17.codec;
 
+import com.linkedin.avroutil1.compatibility.SkipDecoder;
 import com.linkedin.avroutil1.compatibility.avro17.parsing.Parser;
 import com.linkedin.avroutil1.compatibility.avro17.parsing.SkipParser;
 import com.linkedin.avroutil1.compatibility.avro17.parsing.Symbol;
-import org.apache.avro.io.Decoder;
-
 import java.io.IOException;
+import org.apache.avro.io.Decoder;
 
 /** Base class for <a href="parsing/package-summary.html">parser</a>-based
  * {@link Decoder}s. */
-public abstract class ParsingDecoder extends Decoder
+public abstract class ParsingDecoder extends SkipDecoder
   implements Parser.ActionHandler, SkipParser.SkipHandler {
   protected final SkipParser parser;
 
@@ -41,7 +41,7 @@ public abstract class ParsingDecoder extends Decoder
   }
 
   protected abstract void skipFixed() throws IOException;
-  
+
   @Override
   public void skipAction() throws IOException {
     parser.popSymbol();
@@ -78,6 +78,6 @@ public abstract class ParsingDecoder extends Decoder
       skipMap();
     }
   }
-  
+
 }
 
